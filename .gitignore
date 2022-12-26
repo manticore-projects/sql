@@ -29,4 +29,5 @@ node_modules
 nb-configuration.xml
 gradle/
 .gradle/
+gradlew
 gradlew.bat
