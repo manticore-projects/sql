@@ -21,52 +21,66 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.9.0</version>
+            <version>5.8.1</version>
             <scope>test</scope>
         </dependency>
         
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.9.0</version>
+            <version>5.8.1</version>
             <scope>test</scope>
         </dependency>
         
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.9.0</version>
+            <version>5.8.1</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.facebook.airlift</groupId>
+            <groupId>io.airlift</groupId>
             <artifactId>configuration</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.facebook.airlift</groupId>
+            <groupId>io.airlift</groupId>
             <artifactId>log</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.facebook.airlift</groupId>
+            <groupId>io.airlift</groupId>
             <artifactId>bootstrap</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/hu.webarticum/tree-printer -->
+        <dependency>
+            <groupId>hu.webarticum</groupId>
+            <artifactId>tree-printer</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -104,7 +118,6 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                         <configuration>
-                            <sourceDirectory>target/generated-sources/javacc</sourceDirectory>
                             <outputLanguage>java</outputLanguage>
                         </configuration>
                     </execution>
@@ -199,7 +212,25 @@
 
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.0.0-M7</version>
+                <configuration>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.conditions.deactivate = *
+                            junit.jupiter.extensions.autodetection.enabled = true
+                            junit.jupiter.testinstance.lifecycle.default = per_class
+                            junit.jupiter.execution.parallel.enabled = true
+                        </configurationParameters>
+                    </properties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -207,7 +238,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M7</version>
                 <configuration combine.children="append">
-                    <trimStackTrace>false</trimStackTrace>
+                    <trimStackTrace>true</trimStackTrace>
                     <includes>
                         <include>**/*.java</include>
                         <include>target/**/*.java</include>
@@ -216,6 +247,8 @@
                     <excludes>
                         <exclude>**/*jmhTest*.java</exclude>
                         <exclude>**/*jmhType*.java</exclude>
+                        <!-- those shall be handled by the FAIL SAFE plugin only -->
+                        <exclude>**/*TestIT.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -235,6 +268,14 @@
                             <addClasspath>false</addClasspath>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <configuration>
+                    <useNativeGit>true</useNativeGit>
                 </configuration>
             </plugin>
         </plugins>

@@ -14,20 +14,26 @@
 package com.manticore.jsqlformatter;
 
 import com.facebook.coresql.parser.AstNode;
-import com.facebook.coresql.parser.ParserHelper;
+import com.facebook.coresql.parser.ParseException;
+import com.facebook.coresql.parser.SimpleCharStream;
+import com.facebook.coresql.parser.SqlParser;
+import com.facebook.coresql.parser.SqlParserTokenManager;
 import com.facebook.coresql.parser.Unparser;
+import hu.webarticum.treeprinter.SimpleTreeNode;
+import hu.webarticum.treeprinter.TreeNode;
+import hu.webarticum.treeprinter.printer.listing.ListingTreePrinter;
 import org.junit.jupiter.api.Assertions;
 
+import java.io.StringReader;
 import java.util.regex.Pattern;
 
 public final class TestUtils
 {
     private static final Pattern SQL_COMMENT_PATTERN = Pattern.compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
-
     private static final Pattern SQL_SANITATION_PATTERN = Pattern.compile("(\\s+)", Pattern.MULTILINE);
-
     // Assure SPACE around Syntax Characters
-    private static final Pattern SQL_SANITATION_PATTERN2 = Pattern.compile("\\s*([!/,()=+\\-*|\\]<>:])\\s*", Pattern.MULTILINE);
+    private static final Pattern SQL_SANITATION_PATTERN2 = Pattern
+            .compile("\\s*([!/,()=+\\-*|\\]<>:])\\s*", Pattern.MULTILINE);
 
     private TestUtils()
     {}
@@ -37,10 +43,8 @@ public final class TestUtils
         if (relaxed) {
             // remove comments
             String sanitizedSqlStr = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
-
             // redundant white space
             sanitizedSqlStr = SQL_SANITATION_PATTERN.matcher(sanitizedSqlStr).replaceAll(" ");
-
             // assure spacing around Syntax Characters
             sanitizedSqlStr = SQL_SANITATION_PATTERN2.matcher(sanitizedSqlStr).replaceAll("$1");
             return sanitizedSqlStr.trim().toLowerCase();
@@ -51,19 +55,54 @@ public final class TestUtils
         }
     }
 
-    public static void assertParseAndUnparse(String sqlStr, boolean relaxed)
+    // re-implement this method since we want to catch the Error
+    public static AstNode parseStatement(String sql) throws ParseException
     {
-        String expectedSqlStr = buildSqlString(sqlStr, relaxed);
-
-        AstNode ast = ParserHelper.parseStatement(sqlStr);
-        Assertions.assertNotNull(ast);
-        String actualSqlStr = buildSqlString(Unparser.unparse(ast), relaxed);
-
-        Assertions.assertEquals(expectedSqlStr, actualSqlStr);
+        SqlParserTokenManager tokenManager = new SqlParserTokenManager(
+                new SimpleCharStream(new StringReader(sql), 1, 1));
+        SqlParser parser = new SqlParser(tokenManager);
+        parser.direct_SQL_statement();
+        return parser.getResult();
     }
 
-    public static void assertParseAndUnparse(String sqlStr)
+    public static AstNode assertParseAndUnparse(String sqlStr, boolean relaxed)
     {
-        assertParseAndUnparse(sqlStr, true);
+        String expectedSqlStr = buildSqlString(sqlStr, relaxed);
+        AstNode ast = null;
+        try {
+            ast = parseStatement(sqlStr);
+            String actualSqlStr = buildSqlString(Unparser.unparse(ast), relaxed);
+            Assertions.assertEquals(expectedSqlStr, actualSqlStr, "Failed SQL:\n" + sqlStr);
+        }
+        catch (ParseException ex) {
+            Assertions.fail(ex.getLocalizedMessage() + "\n" + sqlStr);
+        }
+        return ast;
+    }
+
+    public static AstNode assertParseAndUnparse(String sqlStr)
+    {
+        return assertParseAndUnparse(sqlStr, true);
+    }
+
+    public static SimpleTreeNode translateNode(AstNode astNode)
+    {
+        String image = astNode.GetImage() == null || astNode.GetImage().isEmpty()
+                ? astNode.toString() + " [" + astNode.getLocation() + "]"
+                : astNode.toString() + ": " + astNode.GetImage() + " [" + astNode.getLocation() + "]";
+        SimpleTreeNode simpleTreeNode = new SimpleTreeNode(image);
+        AstNode[] astNodeChildren = new AstNode[astNode.NumChildren()];
+        for (int i = 0; i < astNode.NumChildren(); i++) {
+            simpleTreeNode.addChild(translateNode(astNode.GetChild(i)));
+        }
+        return simpleTreeNode;
+    }
+
+    public static String formatToTree(AstNode astNode) throws Exception
+    {
+        TreeNode rootTreeNode = null;
+        SimpleTreeNode rootNode = new SimpleTreeNode("SQL Text");
+        rootNode.addChild(translateNode(astNode));
+        return new ListingTreePrinter().stringify(rootNode);
     }
 }
