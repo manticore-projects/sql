@@ -18,7 +18,8 @@
     <url>https://github.com/prestodb/sql</url>
 
     <properties>
-        <dep.airlift.version>219</dep.airlift.version>
+        <!-- 206 is the last Java 8 ByteCode 52 release, everything after depends on Java 11 ByteCode 55) -->
+        <dep.airlift.version>206</dep.airlift.version>
         <air.check.skip-pmd>false</air.check.skip-pmd>
         <air.check.skip-enforcer>false</air.check.skip-enforcer>
         <air.check.skip-checkstyle>false</air.check.skip-checkstyle>
@@ -78,14 +79,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration combine.children="append">
-                    <fork>false</fork>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <!-- <groupId>org.apache.maven.plugins</groupId> -->
                 <artifactId>maven-pmd-plugin</artifactId>
                 <configuration>
@@ -127,6 +120,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <!-- latest supported Java 8 version -->
+                        <version>8.45.1</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <configLocation>config/checkstyle/checkstyle.xml</configLocation>
                     <suppressionsLocation>config/checkstyle/suppressions.xml</suppressionsLocation>
@@ -180,7 +181,19 @@
                         <formatAnnotations />  <!-- fixes formatting of type annotations, see below -->
                     </java>
                 </configuration>
-            </plugin>            
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <rules>
+                        <requireJavaVersion>
+                            <version>[1.8,)</version>
+                        </requireJavaVersion>
+                    </rules>
+                </configuration>
+            </plugin>
         </plugins>
         
         <pluginManagement>

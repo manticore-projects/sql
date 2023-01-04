@@ -4,7 +4,7 @@ Changelog
 ************************
 
 
-Latest Changes since |JSQLPARSER_VERSION|
+Latest Changes since |PRESTO_SQL_PARSER|
 =============================================================
 
 
