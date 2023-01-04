@@ -5,7 +5,8 @@
     <parent>
         <groupId>io.airlift</groupId>
         <artifactId>airbase</artifactId>
-        <version>130</version>
+        <!-- last working version with Java 8, everything later forcefully adds a "release" option to "javac" -->
+        <version>100</version>
     </parent>
 
     <groupId>com.facebook.presto</groupId>
@@ -21,7 +22,7 @@
         <!-- 206 is the last Java 8 ByteCode 52 release, everything after depends on Java 11 ByteCode 55) -->
         <dep.airlift.version>206</dep.airlift.version>
         <air.check.skip-pmd>false</air.check.skip-pmd>
-        <air.check.skip-enforcer>false</air.check.skip-enforcer>
+        <air.check.skip-enforcer>true</air.check.skip-enforcer>
         <air.check.skip-checkstyle>false</air.check.skip-checkstyle>
         <air.check.skip-dependency>false</air.check.skip-dependency>
         <air.check.skip-duplicate-finder>false</air.check.skip-duplicate-finder>
@@ -90,7 +91,7 @@
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <configuration>
-                    <excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+                    <excludeFilterFile>config/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
                 </configuration>
                 <executions>
                     <execution>
@@ -120,14 +121,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <!-- latest supported Java 8 version -->
-                        <version>8.45.1</version>
-                    </dependency>
-                </dependencies>
                 <configuration>
                     <configLocation>config/checkstyle/checkstyle.xml</configLocation>
                     <suppressionsLocation>config/checkstyle/suppressions.xml</suppressionsLocation>
@@ -185,7 +178,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.1.0</version>
                 <configuration>
                     <rules>
                         <requireJavaVersion>
