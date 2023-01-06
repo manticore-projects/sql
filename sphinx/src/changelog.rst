@@ -8,6 +8,12 @@ Latest Changes since |PRESTO_SQL_PARSER_VERSION|
 =============================================================
 
 
+  * **doc: US compliant wording**
+    
+    Andreas Reichel, 2023-01-06
+  * **doc: fix links and names**
+    
+    Andreas Reichel, 2023-01-04
   * **build: restore Java 8 compatibility**
     
     Andreas Reichel, 2023-01-04
