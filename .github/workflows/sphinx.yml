@@ -8,6 +8,8 @@ jobs:
       - uses: actions/setup-python@v2
       - name: Install dependencies
         run: pip install sphinx sphinx_rtd_theme sphinx-book-theme myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_tabs pygments
+      - name: Install XSLT Processor  
+        run: sudo apt-get install xsltproc
       - name: Checkout project sources
         uses: actions/checkout@v2
         with:
