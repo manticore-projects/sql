@@ -23,7 +23,6 @@ Supported SQL Syntax
 ********************
 
 The EBNF and Railroad Diagrams for the supported SQL Syntax.
-Kindly provided by Gunther Rademacher.
 
    </xsl:text>
         <xsl:apply-templates select="svg:svg"/>
